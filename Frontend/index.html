@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Full-Stack Todo App</title>
+</head>
+<body>
+    <h1>My Todo List</h1>
+    
+    <input type="text" id="newTaskTitle" placeholder="Type a new task here..." />
+    <button onclick="addTask()">Add Task</button>
+    <br><br>
+
+    <button onclick="fetchTodos()">Get My Tasks</button>
+    <ul id="todo-list"></ul>
+
+    <script>
+        // GET Request (What you already built)
+        function fetchTodos() {
+            fetch('http://localhost:5151/api/Todo')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('todo-list').innerHTML = 
+                        data.map(task => `<li>${task.title} - Completed: ${task.isCompleted}</li>`).join('');
+                });
+        }
+
+        // POST Request (The new feature!)
+        function addTask() {
+            // Grab the text the user typed
+            const titleInput = document.getElementById('newTaskTitle').value;
+            
+            // Package it into a JSON format
+            const newTask = {
+                title: titleInput,
+                isCompleted: false
+            };
+
+            // Send the POST request to the API
+            fetch('http://localhost:5151/api/Todo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // Tell the API to expect JSON
+                },
+                body: JSON.stringify(newTask) // Turn our package into a strict text string
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('newTaskTitle').value = ''; // Clear the input box
+                    fetchTodos(); // Automatically refresh the list on the screen!
+                }
+            })
+            .catch(error => console.error("Error adding task:", error));
+        }
+    </script>
+</body>
+</html>
