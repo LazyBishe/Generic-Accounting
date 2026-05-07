@@ -1,0 +1,381 @@
+/* ===== MODERN DESIGN SYSTEM ===== */
+
+/* 1. Base Colors & Typography */
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-blue: #5a67d8;
+  --accent-purple: #764ba2;
+  --success-green: #48bb78;
+  --danger-red: #f56565;
+  --warning-orange: #f6ad55;
+  --text-dark: #1a202c;
+  --text-light: #718096;
+  --bg-light: #f7fafc;
+  --bg-lighter: #edf2f7;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+* {
+  transition: all 0.3s ease;
+}
+
+body {
+  background: var(--bg-light);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* 2. Main Container with Modern Card Design */
+.app-container {
+  max-width: 700px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* 3. Header with Gradient */
+.app-header {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  position: relative;
+}
+
+.app-header h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Date Input Container */
+.date-input-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-input-container strong {
+  font-size: 0.95rem;
+  opacity: 0.95;
+  letter-spacing: 0.5px;
+}
+
+.date-input-container input {
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.date-input-container input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.date-input-container input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Tab Button Container */
+.tab-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Modern Tab Buttons */
+.tab-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+button[onclick*="setActiveTab('expenses')"].tab-btn,
+button[onclick*="setActiveTab('todos')"].tab-btn {
+  /* Active tab will be styled through JavaScript */
+}
+
+/* 4. Content Area */
+.app-content {
+  padding: 40px 30px;
+  background: white;
+}
+
+.app-content h2 {
+  margin: 0 0 20px 0;
+  color: var(--text-dark);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* 5. Form Styles */
+.form-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: var(--bg-lighter);
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder {
+  color: var(--text-light);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(90, 103, 216, 0.1);
+}
+
+/* 6. Buttons */
+button {
+  font-family: inherit;
+}
+
+.add-btn {
+  padding: 14px 24px;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-md);
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.add-btn:active {
+  transform: translateY(0);
+}
+
+/* 7. List Items with Modern Card Design */
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  background: var(--bg-lighter);
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.list-item:hover {
+  background: white;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.list-item input[type="checkbox"] {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--success-green);
+}
+
+.list-item-text {
+  flex: 1;
+  margin: 0 16px;
+  color: var(--text-dark);
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.list-item input[type="checkbox"]:checked ~ .list-item-text {
+  color: var(--text-light);
+  text-decoration: line-through;
+}
+
+/* 8. Delete Button */
+.delete-btn {
+  padding: 8px 14px;
+  background: var(--danger-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.delete-btn:hover {
+  background: #e53e3e;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.2);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* 9. Edit/Save Buttons */
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.edit-btn {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #4c51bf;
+  transform: scale(1.05);
+}
+
+.save-btn {
+  background: var(--success-green);
+  color: white;
+}
+
+.save-btn:hover {
+  background: #38a169;
+  transform: scale(1.05);
+}
+
+.cancel-btn {
+  background: var(--text-light);
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #4a5568;
+  transform: scale(1.05);
+}
+
+/* 10. Total Spent Box */
+.total-spent {
+  margin-top: 25px;
+  padding: 20px;
+  background: var(--secondary-gradient);
+  color: white;
+  border-radius: 12px;
+  text-align: right;
+  font-size: 1.3rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+}
+
+.total-spent span {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+/* 11. Checkbox Styles */
+input[type="checkbox"] {
+  accent-color: var(--success-green);
+}
+
+/* 12. Responsive Design */
+@media (max-width: 600px) {
+  .app-container {
+    margin: 20px;
+    border-radius: 16px;
+  }
+
+  .app-header {
+    padding: 30px 20px;
+    gap: 20px;
+  }
+
+  .app-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .app-content {
+    padding: 25px 20px;
+  }
+
+  .form-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tab-buttons {
+    flex-direction: column;
+  }
+
+  .list-item {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .list-item-text {
+    flex-basis: 100%;
+  }
+}

@@ -16,21 +16,24 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        // GET: api/todo (Fetch all tasks)
+        // 1. Updated GET: api/todo?date=2026-05-02
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems([FromQuery] DateTime date)
         {
-            return await _context.TodoItems.ToListAsync();
+            return await _context.TodoItems
+                .Where(t => t.Date.Date == date.Date)
+                .ToListAsync();
         }
 
-        // POST: api/todo (Create a new task)
+        // 2. Updated POST: To make sure the date is saved correctly
         [HttpPost]
         public async Task<ActionResult<TodoItem>> CreateTodoItem(TodoItem item)
         {
             _context.TodoItems.Add(item);
             await _context.SaveChangesAsync();
 
-            return Ok(item);
+            // Standard practice: Return a 201 Created status
+            return CreatedAtAction(nameof(GetTodoItems), new { id = item.Id }, item);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, TodoItem updatedTask)
@@ -51,6 +54,7 @@ namespace Backend.Controllers
             // 3. The Swap: Update the old values with the new values
             existingTask.Title = updatedTask.Title;
             existingTask.IsCompleted = updatedTask.IsCompleted;
+            existingTask.Date = updatedTask.Date;
 
             // 4. The Save: Push changes to SQL Server
             await _context.SaveChangesAsync();
@@ -59,7 +63,7 @@ namespace Backend.Controllers
             return Ok(existingTask);
         }
         // DELETE: api/Todo/1
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}")]//Premises
         public async Task<IActionResult> DeleteTask(int id)
         {
             // 1. Find the task in the database

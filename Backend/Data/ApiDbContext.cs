@@ -10,5 +10,6 @@ namespace Backend.Data
         }
 
         public DbSet<TodoItem> TodoItems { get; set; }
+        public DbSet<Expense> Expenses { get; set; }
     }
 }
