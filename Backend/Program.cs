@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Backend.Data;
 using Scalar.AspNetCore;
 
@@ -23,6 +25,20 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader(); // Allow any data format
     });
 });
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "MyAccountingApp",
+            ValidAudience = "MyAccountingAppUsers",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("A_Very_Long_And_Super_Secret_Key_1234567890"))
+        };
+    });
 
 var app = builder.Build();
 
