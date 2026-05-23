@@ -42,7 +42,31 @@ const authService = {
     // Shred the digital passport credentials from browser memory
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
+  },authenticatedFetch: async (url, options = {}) => {
+    const token = localStorage.getItem("authToken");
+    
+    // Ensure options has a headers object
+    options.headers = {
+      ...options.headers,
+      "Content-Type": "application/json",
+    };
+
+    // If a token exists, attach it as a Bearer token
+    if (token) {
+      options.headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, options);
+
+    // If the token is expired or invalid, .NET returns 401. 
+    // We should log the user out immediately.
+    if (response.status === 401) {
+      authService.logout();
+      window.location.reload(); // Reboots the app to boot them back to login screen
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    return response;
   }
 };
-
 export default authService;

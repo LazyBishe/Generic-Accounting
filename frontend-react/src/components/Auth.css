@@ -1,0 +1,207 @@
+/* 🌍 Global App Wrapper */
+.index-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 🏷️ Top Header Bar */
+.app-header {
+  width: 100%;
+  padding: 1.5rem 3rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+/* ↕️ The Split Layout Main Body */
+.split-main {
+  display: flex;
+  flex: 1;
+}
+
+/* 🖋️ Left Side: Decorative Concept Hero */
+.hero-side {
+  flex: 1;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  border-right: 1px solid #e2e8f0;
+}
+
+.illustration-box {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.accounting-icon {
+  width: 60px;
+  height: 60px;
+  color: #2563eb;
+}
+
+.hero-text-box {
+  text-align: center;
+  max-width: 400px;
+}
+
+.hero-text-box h2 {
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+
+.hero-text-box p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* 🔐 Right Side: Authentication Form Area */
+.form-side {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 3rem;
+  background-color: #ffffff;
+}
+
+.auth-form-wrapper {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* 🆕 Top Redirect Button (Replaces the entire old header box) */
+.top-redirect-btn {
+  width: 100%;
+  background-color: #f1f5f9;
+  color: #2563eb;
+  border: 1px dashed #cbd5e1;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.top-redirect-btn:hover {
+  background-color: #e2e8f0;
+  border-color: #2563eb;
+}
+
+/* 📝 Standard Input and Grid Rows layout */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.form-input, select.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* 🔥 Submit Action Buttons */
+.submit-btn-dark {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: #0f172a; /* Deep Slate */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+
+.submit-btn-dark:hover {
+  background-color: #1e293b;
+}
+
+.submit-btn-blue {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: #2563eb; /* Corporate Blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+
+.submit-btn-blue:hover {
+  background-color: #1d4ed8;
+}
+
+.error-message {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .split-main {
+    flex-direction: column;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
