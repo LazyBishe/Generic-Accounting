@@ -23,7 +23,5 @@ namespace Backend.DTOs
         [Required]
         public string BusinessType { get; set; } = string.Empty;
         
-        [Required]
-        public string Role { get; set; } = string.Empty;
     }
 }

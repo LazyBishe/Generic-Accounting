@@ -1,5 +1,4 @@
 const BASE_URL = "http://localhost:5151/api/auth"; 
-
 const authService = {
   register: async (registerData) => {
     const response = await fetch(`${BASE_URL}/register`, {
