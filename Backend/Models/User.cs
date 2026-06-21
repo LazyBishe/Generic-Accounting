@@ -13,7 +13,6 @@ namespace Backend.Models
         public string Phone { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Relationship: A user can be linked to many businesses
-        public List<UserBusinessRole> UserBusinessRoles { get; set; } = new();
+        public int BusinessId { get; set; }
     }
 }

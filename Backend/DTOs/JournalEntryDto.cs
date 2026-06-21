@@ -20,8 +20,8 @@ namespace Backend.DTOs
         
         public string Description { get; set; } = string.Empty;
         
-        [Required]
-        public int BusinessId { get; set; } 
+        // [Required]
+        // public int BusinessId { get; set; } 
 
         [Required]
         // This holds the list of the paper slips!

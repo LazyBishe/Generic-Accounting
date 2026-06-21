@@ -5,6 +5,9 @@ namespace Backend.Models
     public class Account
     {
         public int Id { get; set; }
+       
+        [Required]
+        public int AccountNumber { get; set; }
 
         [Required]
         public string Name { get; set; } = string.Empty; // e.g., "Cash", "Rent Expense", "Sales"

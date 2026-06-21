@@ -17,9 +17,16 @@ const createEntry = async (entryData) => {
   }
   return await response.json();
 };
-const getRecentEntries = async (businessId) => {
+const getRecentEntries = async (businessId, startDate = null, endDate = null) => {
   const token = localStorage.getItem("authToken");
-  const response = await fetch(`${API_URL}/business/${businessId}`, {
+  
+  // Build the URL with optional date filters
+  let url = `${API_URL}/business/${businessId}`;
+  if (startDate && endDate) {
+    url += `?startDate=${startDate}&endDate=${endDate}`;
+  }
+
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`

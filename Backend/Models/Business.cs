@@ -7,9 +7,6 @@ namespace Backend.Models
         public string BusinessType { get; set; } = string.Empty; // e.g. "Salon", "Retail"
         public string Address { get; set; } = string.Empty;
 
-
-        // Relationship: A business can have many users (Accountant, Owner, etc.)
-        public List<UserBusinessRole> UserBusinessRoles { get; set; } = new();
         // A business owns its own unique chart of accounts
         public List<Account> Accounts { get; set; } = new();
 

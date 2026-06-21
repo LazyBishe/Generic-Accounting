@@ -5,6 +5,9 @@ namespace Backend.DTOs
     public class AccountDto
     {
         [Required]
+        public int AccountNumber { get; set; }
+        
+        [Required]
         public string Name { get; set; } = string.Empty; // e.g., "Cash", "Internet Bill"
 
         [Required]

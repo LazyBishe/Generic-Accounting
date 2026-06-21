@@ -1,123 +1,202 @@
-import React, { useState } from "react";
-import journalService from "../services/journalService";
+import React, { useState, useEffect } from 'react';
+import AccountDropdown from './AccountDropdown';
+import accountService from '../services/accountService';
+import journalService from '../services/journalService';
+import { getDecodedToken } from '../utils/authUtils';
 
-const JournalEntryForm = ({ accounts, onPostSuccess, businessId }) => {
-  const [entry, setEntry] = useState({
-    date: new Date().toISOString().split("T")[0],
-    description: "",
-    businessId: businessId,
-    lines: [
-        { accountId: "", debit: "", credit: "" }, // Line 1
-        { accountId: "", debit: "", credit: "" }  // Line 2 (Every entry needs at least 2!)
-    ] 
-  });
+const JournalEntryForm = ({ onEntryPosted }) => {
+  const [accounts, setAccounts] = useState([]);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  // Start with 2 empty lines (Minimum requirement for double-entry)
+  const [lines, setLines] = useState([
+    { accountId: '', description: '', debit: 0, credit: 0 },
+    { accountId: '', description: '', debit: 0, credit: 0 }
+  ]);
 
-  const addLine = () => {
-    setEntry({
-      ...entry,
-      lines: [...entry.lines, { accountId: "", debit: "", credit: "" }]
-    });
-  };
+  useEffect(() => {
+    loadAccounts();
+  }, []);
 
-  const handleLineChange = (index, e) => {
-    const newLines = [...entry.lines];
-    newLines[index][e.target.name] = e.target.value;
-    setEntry({ ...entry, lines: newLines });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // 🧹 THE CLEANUP SQUAD: Format the data perfectly for C#
-      const formattedEntry = {
-        date: entry.date,
-        description: entry.description,
-        businessId: businessId, // Use the dynamic business ID
-        lines: entry.lines.map(line => ({
-          accountId: parseInt(line.accountId), // Converts text "2" to integer 2
-          debit: parseFloat(line.debit) || 0,  // Converts blank "" to number 0
-          credit: parseFloat(line.credit) || 0 // Converts blank "" to number 0
-        }))
-      };
-      await journalService.createEntry(formattedEntry);
-      
-      alert("Entry saved successfully!");
-
-      if (onPostSuccess) onPostSuccess();
-      
-      // Reset the form back to blank state after success!
-      setEntry({ 
-          ...entry, 
-          description: "", 
-          lines: [
-              { accountId: "", debit: "", credit: "" }, 
-              { accountId: "", debit: "", credit: "" }
-          ] 
-      });
-
-    } catch (err) {
-      // If it still fails, let's print the actual C# error to the browser console!
-      console.error(err);
-      alert("Error: " + err.message);
+  const loadAccounts = async () => {
+    const tokenData = getDecodedToken();
+    if (tokenData?.businessId) {
+      try {
+        const data = await accountService.getAccountsForBusiness(tokenData.businessId);
+        console.log("Accounts loaded in JournalEntryForm:", data);
+        setAccounts(data);
+      } catch (err) {
+        console.error("Failed to load accounts", err);
+      }
     }
   };
 
-  // 🧮 THE NEW MATH ENGINE: Calculate live totals as the user types
-  const totalDebits = entry.lines.reduce((sum, line) => sum + Number(line.debit || 0), 0);
-  const totalCredits = entry.lines.reduce((sum, line) => sum + Number(line.credit || 0), 0);
+  // --- MATH HELPERS ---
+  const calculateTotalDebits = () => lines.reduce((sum, line) => sum + (parseFloat(line.debit) || 0), 0);
+  const calculateTotalCredits = () => lines.reduce((sum, line) => sum + (parseFloat(line.credit) || 0), 0);
+  
+  const totalDebits = calculateTotalDebits();
+  const totalCredits = calculateTotalCredits();
   const isBalanced = totalDebits === totalCredits && totalDebits > 0;
 
+  // --- LINE MANAGEMENT ---
+  const handleLineChange = (index, field, value) => {
+    const newLines = [...lines];
+    newLines[index][field] = value;
+
+    // Rule: If you type in Debit, clear the Credit (and vice versa)
+    if (field === 'debit' && value > 0) newLines[index].credit = 0;
+    if (field === 'credit' && value > 0) newLines[index].debit = 0;
+
+    setLines(newLines);
+  };
+
+  const addLine = () => setLines([...lines, { accountId: '', description: '', debit: 0, credit: 0 }]);
+  
+  const removeLine = (index) => {
+    if (lines.length <= 2) return; // Force at least 2 lines
+    const newLines = lines.filter((_, i) => i !== index);
+    setLines(newLines);
+  };
+
+  // --- SUBMISSION ---
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(''); setSuccess('');
+
+    // 1. Validation Checks
+    if (!isBalanced) return setError("Debits must equal Credits to post an entry.");
+    if (lines.some(l => !l.accountId)) return setError("Every line must have an account selected.");
+
+    const tokenData = getDecodedToken();
+    
+    // 2. Format the data for the C# Backend
+    const entryData = {
+      date,
+      description,
+      businessId: tokenData.businessId,
+      lines: lines.map(l => ({
+        accountId: parseInt(l.accountId),
+        description: l.description,
+        debit: parseFloat(l.debit) || 0,
+        credit: parseFloat(l.credit) || 0
+      }))
+    };
+console.log(entryData);      
+    try {
+      await journalService.createEntry(entryData);
+      setSuccess("Journal Entry successfully posted!");
+      // Reset the form
+      setDescription('');
+      setLines([
+        { accountId: '', description: '', debit: 0, credit: 0 },
+        { accountId: '', description: '', debit: 0, credit: 0 }
+      ]);
+      if (onEntryPosted) onEntryPosted(); // Tell Dashboard to refresh history
+    } catch (err) {
+      setError(err.message || "Failed to post entry.");
+    }
+  };
+  
+
   return (
-    <form onSubmit={handleSubmit} style={{ background: "#ffffff", padding: "2rem", borderRadius: "12px", border: "1px solid #e5e7eb", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
-      <h3 style={{ marginTop: 0, color: "#111827", borderBottom: "1px solid #eee", paddingBottom: "1rem", marginBottom: "1.5rem" }}>
-        📝 Record New Transaction
+    <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+      <h3 style={{ borderBottom: '2px solid #f0f0f0', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+        📝 Record New Journal Entry
       </h3>
-      
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
-        <input type="date" value={entry.date} onChange={(e) => setEntry({...entry, date: e.target.value})} style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}/>
-        <input type="text" placeholder="What happened? (e.g., Bought an office chair)" value={entry.description} onChange={(e) => setEntry({...entry, description: e.target.value})} style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }} required />
-      </div>
 
-      {/* The Dynamic Lines */}
-      {entry.lines.map((line, index) => (
-        <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-          
-          <select onChange={(e) => handleLineChange(index, e)} name="accountId" value={line.accountId} required style={{ flex: 2, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}>
-            <option value="">-- Select Account Bucket --</option>
-            {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.accountType})</option>)}
-          </select>
-          
-          <input type="number" min="0" step="0.01" name="debit" placeholder="Debit ($ In)" value={line.debit} onChange={(e) => handleLineChange(index, e)} style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }} />
-          <input type="number" min="0" step="0.01" name="credit" placeholder="Credit ($ Out)" value={line.credit} onChange={(e) => handleLineChange(index, e)} style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }} />
-        
+      {error && <div style={{ color: '#721c24', background: '#f8d7da', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>{error}</div>}
+      {success && <div style={{ color: '#155724', background: '#d4edda', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>{success}</div>}
+
+      <form onSubmit={handleSubmit}>
+        {/* TOP CONTROLS: Date and Main Memo */}
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ flex: '1' }}>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} required style={{ width: '100%', padding: '0.5rem' }} />
+          </div>
+          <div style={{ flex: '3' }}>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Main Description / Memo</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g., Monthly Rent Payment" required style={{ width: '100%', padding: '0.5rem' }} />
+          </div>
         </div>
-      ))}
 
-      <button type="button" onClick={addLine} style={{ background: "#f3f4f6", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer", marginTop: "0.5rem", color: "#374151", fontWeight: "bold" }}>
-        + Add Another Line
-      </button>
+        {/* THE ACCOUNTING GRID */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
+              <th style={{ padding: '0.75rem', textAlign: 'left', width: '35%' }}>Account</th>
+              <th style={{ padding: '0.75rem', textAlign: 'left', width: '30%' }}>Line Description</th>
+              <th style={{ padding: '0.75rem', textAlign: 'right', width: '15%' }}>Debit ($)</th>
+              <th style={{ padding: '0.75rem', textAlign: 'right', width: '15%' }}>Credit ($)</th>
+              <th style={{ padding: '0.75rem', textAlign: 'center', width: '5%' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((line, index) => (
+              <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '0.5rem' }}>
+                  {/* 🌟 OUR NEW SMART COMPONENT 🌟 */}
+                  <AccountDropdown 
+                    accounts={accounts} 
+                    value={line.accountId} 
+                    onChange={(val) => handleLineChange(index, 'accountId', val)} 
+                  />
+                </td>
+                <td style={{ padding: '0.5rem' }}>
+                  <input type="text" value={line.description} onChange={e => handleLineChange(index, 'description', e.target.value)} placeholder="Description/Memo" style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box' }} />
+                </td>
+                <td style={{ padding: '0.5rem' }}>
+                  <input type="number" min="0" step="0.01" value={line.debit === 0 ? '' : line.debit} onChange={e => handleLineChange(index, 'debit', e.target.value)} style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box', textAlign: 'right' }} />
+                </td>
+                <td style={{ padding: '0.5rem' }}>
+                  <input type="number" min="0" step="0.01" value={line.credit === 0 ? '' : line.credit} onChange={e => handleLineChange(index, 'credit', e.target.value)} style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box', textAlign: 'right' }} />
+                </td>
+                <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                  <button type="button" onClick={() => removeLine(index)} disabled={lines.length <= 2} style={{ background: 'transparent', border: 'none', color: lines.length <= 2 ? '#ccc' : '#dc3545', cursor: lines.length <= 2 ? 'not-allowed' : 'pointer', fontSize: '1.2rem' }}>
+                    ✖
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {/* TOTALS FOOTER */}
+          <tfoot>
+            <tr style={{ fontWeight: 'bold', background: '#f8f9fa' }}>
+              <td colSpan="2" style={{ padding: '1rem', textAlign: 'right' }}>TOTALS:</td>
+              <td style={{ padding: '1rem', textAlign: 'right', color: totalDebits !== totalCredits ? '#dc3545' : '#28a745' }}>
+                ${totalDebits.toFixed(2)}
+              </td>
+              <td style={{ padding: '1rem', textAlign: 'right', color: totalDebits !== totalCredits ? '#dc3545' : '#28a745' }}>
+                ${totalCredits.toFixed(2)}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
 
-      {/* 📊 THE LIVE BALANCER DISPLAY */}
-      <div style={{ marginTop: "2rem", padding: "1.5rem", background: isBalanced ? "#dcfce3" : "#fee2e2", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <span style={{ display: "block", color: "#4b5563", fontSize: "0.9rem" }}>Total Debits: <strong style={{ color: "black", fontSize: "1.2rem" }}>${totalDebits.toFixed(2)}</strong></span>
-          <span style={{ display: "block", color: "#4b5563", fontSize: "0.9rem" }}>Total Credits: <strong style={{ color: "black", fontSize: "1.2rem" }}>${totalCredits.toFixed(2)}</strong></span>
-        </div>
-        
-        <div style={{ textAlign: "right" }}>
-            {!isBalanced ? (
-                <span style={{ color: "#991b1b", fontWeight: "bold" }}>❌ Transaction is out of balance!</span>
-            ) : (
-                <span style={{ color: "#166534", fontWeight: "bold" }}>✅ Balanced! Ready to post.</span>
+        {/* BOTTOM ACTION BUTTONS */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button type="button" onClick={addLine} style={{ padding: '0.5rem 1rem', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            + Add Another Line
+          </button>
+          
+          <div style={{ textAlign: 'right' }}>
+            {!isBalanced && totalDebits > 0 && (
+              <span style={{ color: '#dc3545', marginRight: '1rem', fontWeight: 'bold' }}>
+                ⚠️ Debits must equal Credits
+              </span>
             )}
-            <br />
-            {/* The Submit button is DISABLED if math is wrong! */}
-            <button type="submit" disabled={!isBalanced} style={{ marginTop: "0.5rem", padding: "0.75rem 1.5rem", background: isBalanced ? "#2563eb" : "#9ca3af", color: "white", border: "none", borderRadius: "6px", cursor: isBalanced ? "pointer" : "not-allowed", fontWeight: "bold" }}>
-            Post Transaction to Vault
+            <button type="submit" disabled={!isBalanced} style={{ padding: '0.75rem 2rem', background: isBalanced ? '#007bff' : '#ccc', color: 'white', border: 'none', borderRadius: '4px', cursor: isBalanced ? 'pointer' : 'not-allowed', fontSize: '1.1rem', fontWeight: 'bold' }}>
+              Post Journal Entry
             </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 

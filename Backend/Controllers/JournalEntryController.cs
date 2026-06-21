@@ -22,6 +22,13 @@ namespace Backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateEntry([FromBody] JournalEntryDto dto)
         {
+
+            var businessIdClaim = User.FindFirst("BusinessId")?.Value;
+            if (string.IsNullOrEmpty(businessIdClaim))
+            {
+                return Unauthorized("Your token does not contain a Business ID.");
+            }
+            int businessId = int.Parse(businessIdClaim);
             // --- RULE 1: The Golden Rule of Accounting ---
             // Calculate the total of all Debits, and the total of all Credits
             decimal totalDebits = dto.Lines.Sum(l => l.Debit);
@@ -44,7 +51,7 @@ namespace Backend.Controllers
             {
                 Date = dto.Date,
                 Description = dto.Description,
-                BusinessId = dto.BusinessId,
+                BusinessId = businessId,
                 // Loop through the DTO lines and turn them into actual Database Lines
                 Lines = dto.Lines.Select(l => new JournalEntryLine
                 {
@@ -61,18 +68,32 @@ namespace Backend.Controllers
 
             return Ok(new { message = "Journal Entry balanced and saved securely!" });
         }
-        // GET: api/journalentry/business/1
+        // GET: api/journalentry/business/1?startDate=...&endDate=...
         [HttpGet("business/{businessId}")]
-        [Authorize] // 🛡️ Bouncer checks ID badge
-        public async Task<IActionResult> GetRecentEntries(int businessId)
+        [Authorize]
+        public async Task<IActionResult> GetEntries(int businessId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            // Go into the vault, grab the envelopes, AND open them to get the paper slips inside!
-            var entries = await _context.JournalEntries
-                .Include(je => je.Lines)           // Get the paper slips
-                .ThenInclude(line => line.Account) // Look at the Account Name on the slip
+            // 1. Start building the vault query
+            var query = _context.JournalEntries
+                .Include(je => je.Lines)
+                .ThenInclude(line => line.Account)
                 .Where(je => je.BusinessId == businessId)
-                .OrderByDescending(je => je.Date)  // Newest first
-                .Take(10)                          // Only grab the 10 most recent
+                .AsQueryable();
+
+            // 2. Apply Date Filters if the frontend sent them!
+            if (startDate.HasValue)
+            {
+                query = query.Where(je => je.Date >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(je => je.Date <= endDate.Value);
+            }
+
+            // 3. Execute the search and sort newest first
+            var entries = await query
+                .OrderByDescending(je => je.Date)
+                .ThenByDescending(je => je.Id)
                 .ToListAsync();
 
             return Ok(entries);
